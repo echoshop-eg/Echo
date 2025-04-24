@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up - EchoShop</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgaL-V6YpIc2dTTD1NRddwkPIekqKmg34",
+      authDomain: "echoshop-eg.firebaseapp.com",
+      projectId: "echoshop-eg",
+      storageBucket: "echoshop-eg.appspot.com",
+      messagingSenderId: "465141010854",
+      appId: "1:465141010854:web:0937140429a97bda0dff67"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.handleSignup = async (event) => {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const role = document.getElementById('role').value.trim();
+      const messageDiv = document.getElementById('message');
+
+      messageDiv.textContent = '';
+      messageDiv.style.display = 'none';
+      messageDiv.classList.remove('error');
+
+      if (password !== confirmPassword) {
+        messageDiv.textContent = "❌ Passwords do not match!";
+        messageDiv.classList.add('error');
+        messageDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+          username,
+          email,
+          role
+        });
+
+        // Save username in localStorage for welcome message
+        localStorage.setItem("username", username);
+
+        // Redirect
+        if (role === "client") {
+          console.log("Redirecting to index.html");
+          window.location.href = "index.html";
+        } else if (role === "seller") {
+          console.log("Redirecting to seller-register.html");
+          window.location.href = "seller-register.html";
+        }
+
+      } catch (error) {
+        messageDiv.textContent = "❌ " + error.message;
+        messageDiv.classList.add('error');
+        messageDiv.style.display = 'block';
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #001f3f;
+      color: #39ff14;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .signup-container {
+      background-color: #003366;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    .back-btn, .home-btn {
+      background-color: #22c55e;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      text-align: center;
+    }
+    .back-btn:hover, .home-btn:hover {
+      background-color: #16a34a;
+    }
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #7f1d1d;
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h1>Sign Up</h1>
+    <form id="signupForm" onsubmit="handleSignup(event)">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter your username" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required />
+
+      <label for="confirm-password">Confirm Password</label>
+      <input type="password" id="confirm-password" placeholder="Confirm your password" required />
+
+      <label for="role">Role</label>
+      <select id="role" required>
+        <option value="">-- Select Role --</option>
+        <option value="client">Client</option>
+        <option value="seller">Seller</option>
+      </select>
+
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div id="message"></div>
+
+    <div class="button-container">
+      <a class="back-btn" href="index.html">Back</a>
+      <a class="home-btn" href="index.html">Home</a>
+    </div>
+  </div>
+</body>
+</html>
